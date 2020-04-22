@@ -6,7 +6,6 @@ C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\bin\Debug\netcoreapp2.2\OktaBackE
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\bin\Debug\netcoreapp2.2\OktaBackEnd.runtimeconfig.dev.json
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\bin\Debug\netcoreapp2.2\OktaBackEnd.dll
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\bin\Debug\netcoreapp2.2\OktaBackEnd.pdb
-C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.csproj.CoreCompileInputs.cache
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.RazorAssemblyInfo.cache
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.RazorAssemblyInfo.cs
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.AssemblyInfoInputs.cache
@@ -15,3 +14,5 @@ C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackE
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.dll
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.pdb
 C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.genruntimeconfig.cache
+C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.csprojAssemblyReference.cache
+C:\Users\arivi\Desktop\GitProjects\OktaBackEnd\obj\Debug\netcoreapp2.2\OktaBackEnd.csproj.CoreCompileInputs.cache

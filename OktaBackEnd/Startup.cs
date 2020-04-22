@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,6 +14,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using Okta.AspNetCore;
 
 namespace OktaBackEnd
@@ -29,13 +36,83 @@ namespace OktaBackEnd
         {
             services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = OktaDefaults.ApiAuthenticationScheme;
-                options.DefaultChallengeScheme = OktaDefaults.ApiAuthenticationScheme;
-                options.DefaultSignInScheme = OktaDefaults.ApiAuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                //options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer("Token1", options =>
+             {
+                 options.RequireHttpsMetadata = false;
+                 options.SaveToken = true;
+                 options.TokenValidationParameters = new TokenValidationParameters()
+                 {
+                     ValidateIssuer = true,
+                     ValidateAudience = true,
+                     ValidAudience = Configuration["Jwt:Audience1"],
+                     ValidIssuer = Configuration["Jwt:Issuer1"],
+                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["Jwt:Key1"]))
+                 };
+                 options.Events = new JwtBearerEvents
+                 {
+                     OnTokenValidated = context =>
+                     {
+                         var userId = context.Principal.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+
+                         return Task.CompletedTask;
+                     }
+                 };
+                 options.Events = new JwtBearerEvents
+                 {
+                     OnAuthenticationFailed = context =>
+                     {
+                         var error = context.Exception;
+
+                         return Task.CompletedTask;
+                     }
+                 };
+             })
+            .AddJwtBearer("Token2", options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = Configuration["Jwt:Audience2"],
+                    ValidIssuer = Configuration["Jwt:Issuer2"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["Jwt:Key2"]))
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        var userId = context.Principal.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+
+                        return Task.CompletedTask;
+                    }
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        var error = context.Exception;
+
+                        return Task.CompletedTask;
+                    }
+                };
             })
             .AddOktaWebApi(new OktaWebApiOptions()
             {
                 OktaDomain = Configuration["Okta:OktaDomain"]
+            });
+
+            services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, "Token1", "Token2") // Okta is a Bearer Scheme
+                    .Build();
             });
 
             services.AddCors(options =>
@@ -49,23 +126,22 @@ namespace OktaBackEnd
                                   });
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
             // Register the Swagger services
-            services.AddSwaggerDocument(config =>
+            services.AddOpenApiDocument(document =>
             {
-                config.PostProcess = document =>
+                document.Title = "OktaBackEnd API";
+                document.Description = "Authenticate with Okta to gain access to the API";
+                document.AddSecurity("JWT", Enumerable.Empty<string>(), new NSwag.OpenApiSecurityScheme
                 {
-                    document.Info.Version = "v1";
-                    document.Info.Title = "OktaBackEnd API";
-                    document.Info.Description = "Authenticate with Okta to gain access to the API";
-                    document.Info.Contact = new NSwag.OpenApiContact
-                    {
-                        Name = "Arivin Klimczak",
-                        Email = "arivin.klimczak@gmail.com"
-                    };
-                };
+                    Type = OpenApiSecuritySchemeType.ApiKey,
+                    Name = "Authentication",
+                    In = OpenApiSecurityApiKeyLocation.Header,
+                    Description = "Type into the textbox : Bearer {your token}"
+                });
+                document.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
             });
+
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -85,7 +161,6 @@ namespace OktaBackEnd
                 app.UseHsts();
             }
             app.UseCors(AllowAllCors);
-
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseMvc();
